@@ -87,7 +87,7 @@ Module.register("MMM-Stock", {
 		var that = this;
 		setInterval(function() {
 			that.getStocks();
-			if(this.config.currency.toLowerCase() != "usd"){
+			if(that.config.currency.toLowerCase() != "usd"){
 				that.getExchangeRate();
 			}
 		}, loadTime);

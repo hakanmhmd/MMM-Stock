@@ -16,11 +16,12 @@ module.exports = NodeHelper.create({
 			request({ url: url, method: "GET" }, function (error, response, body) {
 				if (!error && response.statusCode == 200) {
 					var result = JSON.parse(body);
-					if(result["Error Message"]) {
+					if (result["Error Message"]) {
 						console.log("No such symbol!");
 					} else {
 						var meta = result["Meta Data"];
-						if(!meta){
+						if (!meta) {
+							done();
 							return;
 						}
 						var data = result["Time Series (Daily)"];

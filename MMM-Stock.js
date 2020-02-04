@@ -7,6 +7,7 @@ Module.register("MMM-Stock", {
 		fadeSpeed: 1000,
 		companies: ["GOOGL", "YHOO"],
 		currency: "usd",
+		separator: "&nbsp;&nbsp;•&nbsp;&nbsp;",
 		baseURL: "https://www.alphavantage.co/",
 		apikey: "IPWULBT54Y3LHJME"
 	},
@@ -28,11 +29,14 @@ Module.register("MMM-Stock", {
 	},
 
 	getDom: function() {
-		var wrapper = document.createElement("div");
-		wrapper.className = "quotes";
-		var list = document.createElement("ul");
+		var wrapper = document.createElement('marquee');
+        var separator = this.config.separator;
+		var count = 0;
+		var _this = this;
+		wrapper.className = 'medium bright';
 
 		var data = this.result;
+		var size = Object.keys(data).length;
 		// the data is not ready
 		if(Object.keys(data).length === 0 && data.constructor === Object){
 			return wrapper;
@@ -47,36 +51,71 @@ Module.register("MMM-Stock", {
 
 		for (var key in data) {
 			if (!data.hasOwnProperty(key)) {continue;}
+			var symbolElement = document.createElement('span');
+			var priceElement = document.createElement('span');
+			var changeElement = document.createElement('span');
+
 			var symbol = key;
 			var obj = data[key];
 			var current = obj[0];
 			var prev = obj[1];
 			var price = current["4. close"];
-			var change = prev["4. close"] - current["4. close"];
+			var change = current["4. close"] - prev["4. close"];
+			if (symbol == "^GSPC") {symbol = "S&P500";}
+			else if (symbol == "^DJI") {symbol = "DOW";}
+			else if (symbol == "^IXIC") {symbol = "NASDAQ";}
 
-			var html = "";
-			var priceClass = "greentext", priceIcon="up_green";
-			if(change < 0) {
-				priceClass = "redtext";
-				priceIcon="down_red";
+			symbolElement.className = 'stock__stock--symbol';
+			priceElement.className = 'stock__stock--price';
+			changeElement.className = 'stock__stock--change';
+			symbolElement.innerHTML = symbol + ' ';
+			wrapper.appendChild(symbolElement)
+
+			priceElement.innerHTML = '$' + _this.formatMoney(price, 2, '.', ',');
+
+			if (change > 0) {
+				changeElement.classList += ' up';
+			} else {
+				changeElement.classList += ' down';
 			}
-			html = html + "<span class='" + priceClass + "'>";
-			html = html + "<span class='quote'> (" + symbol + ")</span> ";
-			html = html + parseFloat(price).toFixed(2) + " USD";
-			html = html + "<span class='" + priceIcon + "'></span>" + parseFloat(Math.abs(change)).toFixed(2);
+			var perc = Math.abs((change/prev["4. close"]) * 100);
+			changeElement.innerHTML = ' ' + _this.formatMoney(change, 2, '.', ',') + ' (' + _this.formatMoney(perc, 2, '.', ',') + '%)';
 
-			var stock = document.createElement("span");
-			stock.className = "stockTicker";
-			stock.innerHTML = html;
+			var divider = document.createElement('span');
 
-			var listItem = document.createElement("li");
-			listItem.innerHTML = html;
-			list.appendChild(listItem);
+			if (count < (size - 1)){
+				divider.innerHTML = separator;
+			}
+
+			wrapper.appendChild(priceElement);
+			wrapper.appendChild(changeElement);
+			wrapper.appendChild(divider);
+			count++;
+	
 		}
 
-		wrapper.appendChild(list);
 		return wrapper;
 	},
+
+	formatMoney: function (amount, decimalCount, decimal, thousands) {
+        try {
+            decimalCount = Math.abs(decimalCount);
+            decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+            var negativeSign = amount < 0 ? '-' : '';
+
+            var i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+            var j = (i.length > 3) ? i.length % 3 : 0;
+
+            return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : '');
+        } catch (e) {
+            throw new Error(e);
+        }
+    },
+
+    roundValue: function (value) {
+        return Math.round(value * 100) / 100;
+    },
 
 	scheduleUpdate: function(delay) {
 		var loadTime = this.config.updateInterval;
@@ -87,7 +126,7 @@ Module.register("MMM-Stock", {
 		var that = this;
 		setInterval(function() {
 			that.getStocks();
-			if(this.config.currency.toLowerCase() != "usd"){
+			if(that.config.currency.toLowerCase() != "usd"){
 				that.getExchangeRate();
 			}
 		}, loadTime);

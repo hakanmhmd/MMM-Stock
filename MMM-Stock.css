@@ -1,3 +1,32 @@
+.marquee {
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  box-sizing: border-box;
+  animation: marquee 50s linear infinite;
+  -webkit-animation: marquee 50s linear infinite;
+}
+.down {
+  color: red;
+}
+
+.down::before {
+  content: '▾';
+}
+
+.up {
+  color: green;
+}
+
+.up::before {
+  content: '▴';
+}
+
+.down::before,
+.up::before {
+  margin-left: 15px;
+}
 
 span.quote
 {
@@ -14,28 +43,7 @@ span.quote
 {
 	color: green;
 }
-.up_green
-{
-	background: url(http://www.codescratcher.com/wp-content/uploads/2014/11/down.gif) no-repeat left center;
-	padding-left: 10px;
-	margin-right: 5px;
-}
-.down_red
-{
-	background: url(http://www.codescratcher.com/wp-content/uploads/2014/11/up.gif) no-repeat left center;
-	padding-left: 10px;
-	margin-right: 5px;
-}
 
-
-@keyframes ticker {
-	0%   {margin-top: 0}
-    20%  {margin-top: -30px}
-    40%  {margin-top: -60px}
-    60%  {margin-top: -90px}
-    80%  {margin-top: -120px}
-    100% {margin-top: 0}
-}
 .quotes {
   height: 25px;
   overflow: hidden;
